@@ -5,6 +5,7 @@ const fs = require('fs');
 const cors = require('cors');
 
 const app = express();
+app.set('trust proxy', 1); // Trust Render's proxy to get correct https protocol
 const PORT = process.env.PORT || 3000;
 
 // Configuration
