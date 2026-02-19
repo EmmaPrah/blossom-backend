@@ -108,12 +108,40 @@ app.post('/api/users/progress', (req, res) => {
     const user = users.find(u => u.id === userId);
     if (!user) return res.status(404).send('User not found');
 
-    user.progress[bookId] = progress;
+    // Merge or set progress
+    if (typeof progress === 'object') {
+        user.progress[bookId] = {
+            ...(user.progress[bookId] || {}),
+            ...progress,
+            lastReadTimestamp: Date.now()
+        };
+    } else {
+        // Fallback for simple percentage
+        user.progress[bookId] = {
+            ...(user.progress[bookId] || {}),
+            percentage: progress,
+            lastReadTimestamp: Date.now()
+        };
+    }
+
     saveUsers();
     res.sendStatus(200);
 });
 
-// 5. Books: Get All
+// 5. Visits: Track App Opening
+app.post('/api/users/visit', (req, res) => {
+    const { userId } = req.body;
+    const user = users.find(u => u.id === userId);
+    if (!user) return res.status(404).send('User not found');
+
+    user.appOpenCount = (user.appOpenCount || 0) + 1;
+    user.lastVisitTimestamp = Date.now();
+
+    saveUsers();
+    res.sendStatus(200);
+});
+
+// 6. Books: Get All
 app.get('/api/books', (req, res) => {
     res.json(books);
 });
